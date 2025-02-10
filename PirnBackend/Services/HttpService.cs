@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PirnBackend.Models;
 
 namespace PirnBackend.Services;
 
@@ -16,17 +17,17 @@ public class HttpService: IHttpService
         _logger = logger;
     }
     
-    public async Task<IActionResult> Get(string url, Dictionary<string, string>? headers = null)
+    public async Task<JsonDocument> Get(string url, Dictionary<string, string>? headers = null)
     {
         return await ExecuteRequest(url, HttpMethod.Get, headers);
     }
 
-    public async Task<IActionResult> Post(string url, Dictionary<string, string>? headers = null, object? payload = null)
+    public async Task<JsonDocument> Post(string url, Dictionary<string, string>? headers = null, object? payload = null)
     {
         return await ExecuteRequest(url, HttpMethod.Post, headers, payload);
     }
 
-    private async Task<IActionResult> ExecuteRequest(
+    private async Task<JsonDocument> ExecuteRequest(
         string url, 
         HttpMethod httpMethod, 
         Dictionary<string, string>? headers, 
@@ -52,29 +53,19 @@ public class HttpService: IHttpService
         
         var response = await _httpClient.SendAsync(request);
 
-        return await ConvertToIActionResult(response);
-    }
-    
-    private static async Task<ObjectResult> ConvertToIActionResult(HttpResponseMessage response)
-    {
-        // Copy the content if needed
-        var content = await response.Content.ReadAsStringAsync();
-        
-        // Use the response status code to determine IActionResult
-
-        switch (response)
+        if (!response.IsSuccessStatusCode)
         {
-            case { StatusCode: HttpStatusCode.OK }:
-            {
-                var contentObject = JsonSerializer.Deserialize<object>(content);
-                return new OkObjectResult(contentObject);
-            }
-            case { StatusCode: HttpStatusCode.BadRequest }:
-                return new BadRequestObjectResult(content);
-            case { StatusCode: HttpStatusCode.NotFound }:
-                return new NotFoundObjectResult(content);
-            default:
-                return new ObjectResult(content) { StatusCode = (int)response.StatusCode };
+            throw new HttpServiceFailureException(response.StatusCode);
         }
+        
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonDocument.Parse(content);
+        
+        return json;
     }
+}
+
+public class HttpServiceFailureException(HttpStatusCode statusCode): Exception
+{
+    public HttpStatusCode StatusCode { get; } = statusCode;
 }
