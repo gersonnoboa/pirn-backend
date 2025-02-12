@@ -9,5 +9,21 @@ public enum EstonianWordClass
     [StringValue("verb")]
     Verb,
     [StringValue("muutumatu")]
-    Muutumatu
+    Muutumatu,
+    [StringValue("unknown")]
+    Unknown
+}
+
+public static class EstonianWordClassExtensions
+{
+    public static EstonianWordClass GetEstonianWordClass(string? wordClass)
+    {
+        return wordClass switch
+        {
+            "noomen" => EstonianWordClass.Noomen,
+            "verb" => EstonianWordClass.Verb,
+            "muutumatu" => EstonianWordClass.Muutumatu,
+            _ => EstonianWordClass.Unknown
+        };
+    }
 }

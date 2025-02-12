@@ -1,6 +1,6 @@
-namespace PirnBackend.Models;
+namespace PirnBackend.Models.Estonian;
 
-public class Translation
+public class EstonianTranslation: ITranslation
 {
     public required string? OriginalLanguageCode { get; set; }
     public required string? TranslatedLanguageCode { get; set; }

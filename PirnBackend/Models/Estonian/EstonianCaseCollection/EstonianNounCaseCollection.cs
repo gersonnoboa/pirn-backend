@@ -1,7 +1,7 @@
 namespace PirnBackend.Models.EstonianCaseCollection;
 
-public class EstonianNounCaseCollection
+public class EstonianNounCaseCollection: IEstonianCaseCollection
 {
-    public List<EstonianCase> SingularCases { get; } = [];
-    public List<EstonianCase> PluralCases { get; } = [];
+    public required List<EstonianCase> SingularCases { get; set; }
+    public required List<EstonianCase> PluralCases { get; set; }
 }

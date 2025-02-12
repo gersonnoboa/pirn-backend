@@ -15,22 +15,58 @@ public class SonapiService: ISonapiService
     {
         var originalLanguageText = json.RootElement.GetProperty("estonianWord").GetString() ?? typedWord;
 
-        var searchResult = json.RootElement.GetProperty("searchResult").EnumerateArray();
-
-        var translations = GetTranslations(json);
-
         return new EstonianWord
         {
             OriginalLanguageText = originalLanguageText,
-            Meanings = null,
-            Translations = translations,
-            SimilarWords = null,
-            WordClass = EstonianWordClass.Noomen,
-            CaseCollection = null
+            DefinitionGroups = GetDefinitions(json),
+            Translations = GetTranslations(json),
+            SimilarWords = []
         };
     }
 
-    public List<Translation> GetTranslations(JsonDocument json)
+    private List<EstonianDefinitionGroup> GetDefinitions(JsonDocument json)
+    {
+        var searchResultArray = json.RootElement.GetProperty("searchResult").EnumerateArray();
+        return searchResultArray.Select(resultJson =>
+        {
+            var meaningsArray = resultJson.GetProperty("meanings").EnumerateArray();
+            var wordClassesArray = resultJson.GetProperty("wordClasses").EnumerateArray();
+            var wordClassString = !wordClassesArray.Any() ? "" : wordClassesArray.First().GetString();
+            var wordClass = EstonianWordClassExtensions.GetEstonianWordClass(wordClassString);
+            
+            var subDefinitions = meaningsArray.Select(meaningsJson =>
+            {
+                var partOfSpeechArray = meaningsJson.GetProperty("partOfSpeech").EnumerateArray();
+                var partOfSpeechString = !partOfSpeechArray.Any() ? 
+                    "" : 
+                    partOfSpeechArray.First().GetProperty("code").GetString();
+                var partOfSpeech = PartOfSpeechExtensions.GetEstonianPartOfSpeech(partOfSpeechString);
+                
+                var examplesArray = meaningsJson.GetProperty("examples").EnumerateArray();
+                var examples = examplesArray
+                    .Select(example => example.GetString())
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Cast<string>()
+                    .ToList();
+                
+                return new EstonianDefinition
+                {
+                    Definition = meaningsJson.GetProperty("definition").GetString(),
+                    PartOfSpeech = partOfSpeech,
+                    Examples = examples,
+                    CaseCollection = null
+                };
+            }).ToList();
+
+            return new EstonianDefinitionGroup
+            {
+                Definitions = subDefinitions,
+                WordClass = wordClass
+            };
+        }).ToList();
+    }
+    
+    private List<EstonianTranslation> GetTranslations(JsonDocument json)
     {
         var translationArray = json.RootElement.GetProperty("translations").EnumerateArray();
         return translationArray
@@ -47,7 +83,7 @@ public class SonapiService: ISonapiService
                 .Cast<string>()
                 .ToList();
             
-            return new Translation
+            return new EstonianTranslation
             {
                 OriginalLanguageCode = originalLanguageCode,
                 TranslatedLanguageCode = translatedLanguageCode,

@@ -1,19 +1,28 @@
+using PirnBackend.Extensions;
+
 namespace PirnBackend.Models;
 
 public enum PartOfSpeech
 {
+    [StringValue("noun")]
     Noun,
+    [StringValue("adjective")]
     Adjective,
+    [StringValue("verb")]
     Verb,
+    [StringValue("adverb")]
     Adverb,
+    [StringValue("conjugation")]
     Conjugation,
+    [StringValue("pronoun")]
     Pronoun,
+    [StringValue("unknown")]
     Unknown,
 }
 
 public static class PartOfSpeechExtensions
 {
-    public static PartOfSpeech GetEstonianPartOfSpeech(string partOfSpeech)
+    public static PartOfSpeech GetEstonianPartOfSpeech(string? partOfSpeech)
     {
         return partOfSpeech switch
         {

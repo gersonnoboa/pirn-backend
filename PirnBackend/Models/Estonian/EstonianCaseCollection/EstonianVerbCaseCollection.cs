@@ -1,6 +1,6 @@
 namespace PirnBackend.Models.EstonianCaseCollection;
 
-public class EstonianVerbCaseCollection
+public class EstonianVerbCaseCollection: IEstonianCaseCollection
 {
-    public List<EstonianCase> Cases { get; } = [];
+    public required List<EstonianCase> Cases { get; set; }
 }
