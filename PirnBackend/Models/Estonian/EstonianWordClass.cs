@@ -4,12 +4,12 @@ namespace PirnBackend.Models.Estonian;
 
 public enum EstonianWordClass
 {
-    [StringValue("noomen")]
-    Noomen,
+    [StringValue("noun")]
+    Noun,
     [StringValue("verb")]
     Verb,
-    [StringValue("muutumatu")]
-    Muutumatu,
+    [StringValue("constant")]
+    Constant,
     [StringValue("unknown")]
     Unknown
 }
@@ -20,9 +20,9 @@ public static class EstonianWordClassExtensions
     {
         return wordClass switch
         {
-            "noomen" => EstonianWordClass.Noomen,
+            "noomen" => EstonianWordClass.Noun,
             "verb" => EstonianWordClass.Verb,
-            "muutumatu" => EstonianWordClass.Muutumatu,
+            "muutumatu" => EstonianWordClass.Constant,
             _ => EstonianWordClass.Unknown
         };
     }
